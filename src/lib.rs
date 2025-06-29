@@ -57,8 +57,11 @@ pub use toml;
 pub use uuid;
 pub mod fingerprint;
 pub use flexi_logger;
+pub mod websocket;
+pub mod stream;
+pub use stream::Stream;
+pub use whoami;
 
-pub type Stream = tcp::FramedStream;
 pub type SessionID = uuid::Uuid;
 
 #[inline]
@@ -442,6 +445,20 @@ pub fn version_check_request(typ: String) -> (VersionCheckRequest, String) {
         },
         URL.to_string(),
     )
+}
+
+pub fn time_based_rand() -> u32 {
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
+
+    let mut x = nanos as u64;
+    x ^= x << 13;
+    x ^= x >> 7;
+    x ^= x << 17;
+
+    (x % 32768) as u32
 }
 
 #[cfg(test)]
